@@ -1,5 +1,11 @@
 HELP.md
 target/
+node_modules/
+dist/
+logs/
+.env
+.env.*
+.env.local
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -32,3 +38,5 @@ build/
 ### VS Code ###
 .vscode/
 **/application-dev.properties
+application.properties
+src/main/resources/application.properties

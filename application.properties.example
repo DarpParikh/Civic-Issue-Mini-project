@@ -17,3 +17,8 @@ server.error.whitelabel.enabled=false
 server.error.include-message=always
 server.error.include-binding-errors=always
 springdoc.swagger-ui.path=/swagger
+
+# Environment variable examples
+OPENAI_API_KEY=your_key_here
+SPRING_MAIL_USERNAME=your_email_here
+SPRING_MAIL_PASSWORD=your_password_here
