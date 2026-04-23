@@ -1,6 +1,6 @@
 # Civic Issue Mini Project
 
-Spring Boot backend and React frontend in one repository.
+Full-stack civic issue reporting platform with a Spring Boot REST backend and a React (Vite) frontend. Users can submit complaints, view dashboard data, and manage complaint lifecycle through API-driven flows.
 
 ## Project Structure
 
@@ -20,7 +20,13 @@ Frontend requires:
 
 - `VITE_API_URL=http://localhost:8081/api`
 
-Create `frontend/.env` with:
+Create local env files from the examples:
+
+- `frontend/.env.example` -> copy to `frontend/.env`
+
+Backend runtime config is already included in `src/main/resources/application.properties` and reads secrets from environment variables.
+
+Use `frontend/.env` with:
 
 ```env
 VITE_API_URL=http://localhost:8081/api
@@ -28,15 +34,23 @@ VITE_API_URL=http://localhost:8081/api
 
 `frontend/.env` is ignored by git.
 
-## Run The Project
+## Backend Setup
 
-Backend:
+Set required backend environment variables in your terminal before startup:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+export SPRING_MAIL_USERNAME=your_email_here
+export SPRING_MAIL_PASSWORD=your_password_here
+```
+
+Run backend:
 
 ```bash
 mvn spring-boot:run
 ```
 
-Frontend:
+## Frontend Setup
 
 ```bash
 cd frontend

@@ -6,6 +6,8 @@ logs/
 .env
 .env.*
 .env.local
+!.env.example
+!frontend/.env.example
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -38,5 +40,3 @@ build/
 ### VS Code ###
 .vscode/
 **/application-dev.properties
-application.properties
-src/main/resources/application.properties
