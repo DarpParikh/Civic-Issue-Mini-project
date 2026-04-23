@@ -175,13 +175,25 @@ public class ComplaintService {
                 description + "\n\n" +
                 "Location details: " + location;
 
-        String response = chatClient.prompt()
+        try {
+            String response = chatClient.prompt()
                 .user(prompt)
                 .call()
                 .content();
 
-        log.info("AI generated complaint text: {}", response);
-        return response;
+            log.info("AI generated complaint text: {}", response);
+            return response;
+        } catch (Exception ex) {
+            String fallback = "Subject: Civic Grievance Complaint\n" +
+                "Respected Sir/Madam,\n\n" +
+                "I would like to register the following civic issue: " + description + "\n" +
+                "Location: " + location + "\n\n" +
+                "I request your office to take necessary action at the earliest.\n\n" +
+                "Thank you.\n" +
+                "Yours faithfully,";
+            log.warn("AI complaint generation failed, using fallback text: {}", ex.getMessage());
+            return fallback;
+        }
     }
 
     private String buildDefaultEmailBody(Complaint complaint) {

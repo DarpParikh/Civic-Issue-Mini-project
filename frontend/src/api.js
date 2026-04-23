@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
-const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, "");
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+const BACKEND_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, "") || "";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -38,9 +38,7 @@ export const sendComplaintMail = (id, body) => {
 
 export const getComplaints = (userEmail) => {
   console.log("[API] GET /complaints request:", userEmail);
-  return api.get("/complaints", {
-    params: { userEmail },
-  }).then((response) => {
+  return api.get(`/complaints?userEmail=${encodeURIComponent(userEmail)}`).then((response) => {
     console.log("[API] GET /complaints response:", response.data);
     return response.data;
   });
