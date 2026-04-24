@@ -1,5 +1,7 @@
 package com.example.aigrievancesystem.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,30 +16,45 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "complaints")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Complaint {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "category")
     private String category;
 
     @Column(nullable = false, length = 2000)
     private String description;
 
-    @Column(length = 4000)
+    @Column(name = "ai_generated_text", length = 4000)
     private String aiGeneratedText;
 
+    @Column(name = "severity")
     private String severity;
+
+    @Column(name = "latitude")
     private Double latitude;
+
+    @Column(name = "longitude")
     private Double longitude;
+
+    @Column(name = "email")
     private String email;
+    @Column(name = "user_email")
     private String userEmail;
+
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private Status status;
 
+    @Column(name = "created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime createdAt;
 
     @PrePersist

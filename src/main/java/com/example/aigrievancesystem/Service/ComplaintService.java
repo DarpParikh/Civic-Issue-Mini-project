@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -72,13 +73,30 @@ public class ComplaintService {
         return toResponse(savedComplaint);
     }
 
-    public List<ComplaintResponse> getAllComplaints(String userEmail) {
+    public List<ComplaintResponse> getAllComplaints() {
+        return getAllComplaints(null);
+    }
+
+    public List<ComplaintResponse> getComplaintsByUserEmail(String userEmail) {
         if (userEmail == null || userEmail.isBlank()) {
-            throw new IllegalArgumentException("userEmail is required");
+            return Collections.emptyList();
         }
 
         return complaintRepository.findByUserEmail(userEmail)
                 .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ComplaintResponse> getAllComplaints(String userEmail) {
+        List<Complaint> complaints;
+        if (userEmail != null && !userEmail.isBlank()) {
+            complaints = complaintRepository.findByUserEmail(userEmail);
+        } else {
+            complaints = complaintRepository.findAll();
+        }
+
+        return complaints.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }

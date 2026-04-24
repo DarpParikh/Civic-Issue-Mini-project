@@ -3,6 +3,8 @@ target/
 node_modules/
 dist/
 logs/
+*.log
+.DS_Store
 .env
 .env.*
 .env.local
@@ -40,3 +42,5 @@ build/
 ### VS Code ###
 .vscode/
 **/application-dev.properties
+application.properties
+src/main/resources/application.properties

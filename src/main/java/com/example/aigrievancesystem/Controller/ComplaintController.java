@@ -4,6 +4,8 @@ import com.example.aigrievancesystem.dto.ComplaintRequest;
 import com.example.aigrievancesystem.dto.ComplaintResponse;
 import com.example.aigrievancesystem.dto.SendMailRequest;
 import com.example.aigrievancesystem.service.ComplaintService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,8 @@ import java.util.Map;
 @RequestMapping("/api/complaints")
 public class ComplaintController {
 
+    private static final Logger log = LoggerFactory.getLogger(ComplaintController.class);
+
     private final ComplaintService complaintService;
 
     public ComplaintController(ComplaintService complaintService) {
@@ -34,8 +38,21 @@ public class ComplaintController {
     }
 
     @GetMapping
-    public List<ComplaintResponse> getAllComplaints(@RequestParam String userEmail) {
-        return complaintService.getAllComplaints(userEmail);
+    public List<ComplaintResponse> getAllComplaints(@RequestParam(required = false) String userEmail) {
+        try {
+            if (userEmail != null && !userEmail.isBlank()) {
+                log.info("Fetching complaints by userEmail={}", userEmail);
+                return complaintService.getComplaintsByUserEmail(userEmail);
+            }
+            log.info("Fetching all complaints");
+            return complaintService.getAllComplaints();
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid complaints query parameter: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Failed to fetch complaints", ex);
+            throw new RuntimeException("Failed to fetch complaints", ex);
+        }
     }
 
     @PutMapping("/{id}/status")
