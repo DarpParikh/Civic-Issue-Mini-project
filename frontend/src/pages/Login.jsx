@@ -13,7 +13,8 @@ export default function Login({ onLogin, onRegister }) {
     if (!email || !password) { setError("Please fill in all fields"); return; }
     setLoading(true); setError("");
     await new Promise(r => setTimeout(r, 1000));
-    onLogin({ email, name: email.split("@")[0] });
+    const role = (email && email.toLowerCase() === "admin@civic.com" && password === "admin123") ? "ADMIN" : "USER";
+    onLogin({ email, name: email.split("@")[0], role });
     setLoading(false);
   };
 

@@ -164,6 +164,32 @@ export default function CreateComplaint({ user, onBack, onSuccess }) {
     showToast("✉️ Email draft generated!", "success");
   };
 
+  const handleRegenerate = async () => {
+    if (!category) { showToast("Please select a category first", "error"); return; }
+    setEmailLoading(true);
+    try {
+      const selectedCat = CATEGORIES.find(c => c.id === category) || CATEGORIES[11];
+      const payload = {
+        name: user?.name || "Citizen",
+        email: user?.email || "citizen@example.com",
+        category: selectedCat.name,
+        description: description,
+        location: location?.address || manualAddress || "Unknown Location",
+        department: selectedCat.dept
+      };
+      const response = await chatWithAi(payload);
+      const fresh = typeof response === "string" ? response : String(response || "");
+      setEmailDraft(fresh);
+      setEmailGenerated(true);
+      showToast("🤖 Regenerated fresh AI draft.", "success");
+    } catch (err) {
+      console.error("AI regenerate error:", err);
+      showToast("❌ AI regenerate failed.", "error");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   // ── Save complaint only (no direct email send) ───────────
   const handleSubmit = async (event) => {
     if (event?.preventDefault) event.preventDefault();
@@ -251,17 +277,20 @@ export default function CreateComplaint({ user, onBack, onSuccess }) {
     setChatting(true);
     setChatMessages((prev) => [...prev, { role: "user", content: command }]);
 
-    const aiPrompt = `You are an assistant helping revise an official complaint email.
-Return only the revised email body.
-
-Current draft:
-${emailDraft}
-
-User command:
-${command}`;
+    const selectedCat = CATEGORIES.find(c => c.id === category) || CATEGORIES[11];
+    const payload = {
+      name: user?.name || "Citizen",
+      email: user?.email || "citizen@example.com",
+      category: selectedCat.name,
+      description: description,
+      location: location?.address || manualAddress || "Unknown Location",
+      department: selectedCat.dept,
+      currentDraft: emailDraft,
+      modificationCommand: command
+    };
 
     try {
-      const aiResponse = await chatWithAi(aiPrompt);
+      const aiResponse = await chatWithAi(payload);
       const revisedDraft = typeof aiResponse === "string" ? aiResponse : String(aiResponse || "");
       setEmailDraft(revisedDraft);
       setChatMessages((prev) => [...prev, { role: "assistant", content: revisedDraft }]);
@@ -621,7 +650,7 @@ ${command}`;
                     <button className="btn btn-ghost btn-sm" onClick={() => { navigator.clipboard.writeText(emailDraft); showToast("📋 Copied to clipboard!", "success"); }}>
                       📋 Copy Email
                     </button>
-                    <button className="btn btn-ghost btn-sm" onClick={generateEmail}>
+                    <button className="btn btn-ghost btn-sm" onClick={handleRegenerate}>
                       🔄 Regenerate
                     </button>
                     <button className="btn btn-ghost btn-sm" onClick={() => { window.location.href = `mailto:${selectedCat?.email}?subject=Civic Complaint - ${selectedCat?.name}&body=${encodeURIComponent(emailDraft)}`; }}>

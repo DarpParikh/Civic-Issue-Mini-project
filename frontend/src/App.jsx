@@ -35,8 +35,8 @@ export default function App() {
     navigate("dashboard");
   };
 
-  if (page === "login") return <Login onLogin={(u) => { setUser(u); navigate("dashboard"); }} onRegister={() => navigate("register")} />;
+  if (page === "login") return <Login onLogin={(u) => { setUser(u); if (u?.role) localStorage.setItem("role", u.role); if (u?.email) localStorage.setItem("userEmail", u.email); if (u?.name) localStorage.setItem("userName", u.name); navigate("dashboard"); }} onRegister={() => navigate("register")} />;
   if (page === "register") return <Register onBack={() => navigate("login")} onSuccess={() => navigate("login")} />;
-  if (page === "dashboard") return <Dashboard user={user} complaints={complaints} onCreateComplaint={() => navigate("create")} onLogout={() => { setUser(null); setComplaints([]); navigate("login"); }} />;
+  if (page === "dashboard") return <Dashboard user={user} complaints={complaints} onCreateComplaint={() => navigate("create")} onLogout={() => { setUser(null); setComplaints([]); localStorage.removeItem("role"); localStorage.removeItem("userEmail"); localStorage.removeItem("userName"); navigate("login"); }} />;
   if (page === "create") return <CreateComplaint user={user} onBack={() => navigate("dashboard")} onSuccess={handleNewComplaint} />;
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getComplaints, updateStatus } from "../api";
 import "../styles.css";
 
@@ -50,25 +50,22 @@ export default function Dashboard({ user, onCreateComplaint, onLogout }) {
   const [complaints, setComplaints] = useState([]);
   const [filter, setFilter] = useState("ALL");
   const [updatingId, setUpdatingId] = useState(null);
+  const role = localStorage.getItem("role");
 
-  const fetchComplaints = useCallback(async () => {
-    if (!user?.email) {
-      setComplaints([]);
-      return;
-    }
+  useEffect(() => {
+    getComplaints()
+      .then((data) => {
+        const complaintList = Array.isArray(data) ? data : [];
+        console.log("[Dashboard] API response:", complaintList);
+        setComplaints(complaintList);
+      })
+      .catch((error) => {
+        console.error("[Dashboard] Failed to fetch complaints:", error);
+        setComplaints([]);
+      });
+  }, []);
 
-    try {
-      const data = await getComplaints(user.email);
-      const complaintList = Array.isArray(data) ? data : [];
-      console.log("[Dashboard] API response:", complaintList);
-      setComplaints(complaintList);
-    } catch (error) {
-      console.error("[Dashboard] Failed to fetch complaints:", error);
-      setComplaints([]);
-    }
-  }, [user?.email]);
-
-  const handleStatusUpdate = useCallback(async (id, status) => {
+  const handleStatusUpdate = async (id, status) => {
     const normalizedStatus = normalizeStatus(status);
     setUpdatingId(id);
 
@@ -79,18 +76,16 @@ export default function Dashboard({ user, onCreateComplaint, onLogout }) {
 
     try {
       await updateStatus(id, normalizedStatus);
-      await fetchComplaints();
+      const refreshed = await getComplaints();
+      setComplaints(Array.isArray(refreshed) ? refreshed : []);
     } catch (error) {
       console.error("[Dashboard] Failed to update complaint status:", error);
-      await fetchComplaints();
+      const refreshed = await getComplaints();
+      setComplaints(Array.isArray(refreshed) ? refreshed : []);
     } finally {
       setUpdatingId(null);
     }
-  }, [fetchComplaints]);
-
-  useEffect(() => {
-    fetchComplaints();
-  }, [fetchComplaints]);
+  };
 
   const filteredComplaints = useMemo(() => {
     if (filter === "ALL") return complaints;
@@ -157,9 +152,11 @@ export default function Dashboard({ user, onCreateComplaint, onLogout }) {
                 <span className="badge badge-blue">⚡ Fast Resolution</span>
               </div>
             </div>
-            <button className="btn btn-primary btn-lg" onClick={onCreateComplaint}>
-              ➕ Create New Complaint
-            </button>
+            {role !== "ADMIN" && (
+              <button className="btn btn-primary btn-lg" onClick={onCreateComplaint}>
+                ➕ Create New Complaint
+              </button>
+            )}
           </div>
         </div>
 
@@ -181,7 +178,7 @@ export default function Dashboard({ user, onCreateComplaint, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>📋</span>
-              <h2 style={{ fontSize: 18, fontWeight: 700 }}>Your Complaints</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700 }}>{role === "ADMIN" ? "Admin Dashboard" : "Your Complaints"}</h2>
               <span className="badge badge-orange">{complaints.length} total</span>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -236,22 +233,24 @@ export default function Dashboard({ user, onCreateComplaint, onLogout }) {
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
                     <span className={`badge ${STATUS_COLOR[normalizeStatus(c.status)] || "badge-gold"}`}>{formatStatusLabel(normalizeStatus(c.status))}</span>
                     <span style={{ fontSize: 11, color: "var(--white-50)", fontFamily: "var(--font-mono)" }}>{c.referenceNo || `CMP-${String(c.id ?? "N/A")}`}</span>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleStatusUpdate(c.id, "IN_PROGRESS")}
-                        disabled={!c.id || updatingId === c.id || normalizeStatus(c.status) === "IN_PROGRESS"}
-                      >
-                        Mark In Progress
-                      </button>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleStatusUpdate(c.id, "RESOLVED")}
-                        disabled={!c.id || updatingId === c.id || normalizeStatus(c.status) === "RESOLVED"}
-                      >
-                        Mark Resolved
-                      </button>
-                    </div>
+                    {role === "ADMIN" && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleStatusUpdate(c.id, "IN_PROGRESS")}
+                          disabled={!c.id || updatingId === c.id || normalizeStatus(c.status) === "IN_PROGRESS"}
+                        >
+                          Mark In Progress
+                        </button>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleStatusUpdate(c.id, "RESOLVED")}
+                          disabled={!c.id || updatingId === c.id || normalizeStatus(c.status) === "RESOLVED"}
+                        >
+                          Mark Resolved
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

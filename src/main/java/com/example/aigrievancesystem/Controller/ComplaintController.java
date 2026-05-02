@@ -38,8 +38,15 @@ public class ComplaintController {
     }
 
     @GetMapping
-    public List<ComplaintResponse> getAllComplaints(@RequestParam(required = false) String userEmail) {
+    public List<ComplaintResponse> getAllComplaints(
+            @RequestParam(required = false) String userEmail,
+            @RequestParam(required = false) String role
+    ) {
         try {
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                log.info("Fetching all complaints for admin role");
+                return complaintService.getAllComplaints();
+            }
             if (userEmail != null && !userEmail.isBlank()) {
                 log.info("Fetching complaints by userEmail={}", userEmail);
                 return complaintService.getComplaintsByUserEmail(userEmail);

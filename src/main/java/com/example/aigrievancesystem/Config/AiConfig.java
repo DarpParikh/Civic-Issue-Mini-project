@@ -30,12 +30,7 @@ public class AiConfig {
     }
 
     @Bean
-    @ConditionalOnBean(OpenAiChatModel.class)
-    ChatClient chatClient(OpenAiChatModel chatModel, ChatMemory chatMemory, MailService mailService) {
-        return ChatClient
-                .builder(chatModel)
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .defaultTools(mailService)
-                .build();
+    public ChatClient chatClient(OpenAiChatModel chatModel) {
+        return ChatClient.builder(chatModel).build();
     }
 }

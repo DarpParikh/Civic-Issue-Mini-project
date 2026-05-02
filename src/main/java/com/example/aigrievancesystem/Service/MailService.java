@@ -6,6 +6,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.example.aigrievancesystem.model.Complaint;
+
 @Service
 public class MailService {
 
@@ -27,5 +29,28 @@ public class MailService {
             return false;
         }
         return true;
+    }
+
+    public void sendComplaintConfirmation(String toEmail, Complaint complaint) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Complaint Submitted Successfully");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Your complaint has been registered.\n\n");
+        sb.append("Category: " + complaint.getCategory() + "\n");
+        sb.append("Description: " + complaint.getDescription() + "\n");
+        sb.append("Location: " + (complaint.getLatitude() != null && complaint.getLongitude() != null ? ("Lat: " + complaint.getLatitude() + ", Lng: " + complaint.getLongitude()) : "Not provided") + "\n");
+        sb.append("Status: " + complaint.getStatus() + "\n\n");
+        sb.append("We will take necessary action.\n\n");
+        sb.append("Regards,\nCivicVoice Team");
+
+        message.setText(sb.toString());
+        try {
+            mailSender.send(message);
+            System.out.println("Complaint email sent to: " + toEmail);
+        } catch (MailException ex) {
+            System.out.println("Failed to send complaint email to: " + toEmail + " - " + ex.getMessage());
+        }
     }
 }

@@ -25,11 +25,17 @@ export const createComplaint = async (data) => {
   return res.data;
 };
 
-// GET (with email)
-export const getComplaints = async (userEmail) => {
-  const res = await api.get("/complaints", {
-    params: { userEmail },
-  });
+// GET (role-aware)
+export const getComplaints = async () => {
+  const role = localStorage.getItem("role");
+  const userEmail = localStorage.getItem("userEmail");
+
+  const res = await api.get(
+    "/complaints",
+    role === "ADMIN"
+      ? { params: { role: "ADMIN" } }
+      : { params: { userEmail: userEmail || "" } }
+  );
   return res.data;
 };
 
@@ -53,9 +59,22 @@ export const sendComplaintMail = async (id, body) => {
    AI CHAT
 =========================== */
 
-export const chatWithAi = async (message) => {
-  const res = await axios.post(`${BASE_URL}/chat`, null, {
-    params: { message },
-  });
-  return res.data;
+export const chatWithAi = async (payload) => {
+  console.log("[API] POST /chat request:", payload);
+
+  try {
+    let requestBody;
+    if (typeof payload === 'string') {
+      requestBody = { description: payload };
+    } else {
+      requestBody = payload;
+    }
+
+    const response = await axios.post(`${BASE_URL}/chat`, requestBody);
+    console.log("[API] POST /chat response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("[API] POST /chat error:", error);
+    throw error;
+  }
 };

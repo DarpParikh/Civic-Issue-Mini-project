@@ -70,6 +70,22 @@ public class ComplaintService {
         Complaint savedComplaint = complaintRepository.save(complaint);
         log.info("Complaint created with id={}", savedComplaint.getId());
 
+        // Send confirmation email to the user who filed the complaint (best-effort)
+        try {
+            String userEmail = savedComplaint.getUserEmail();
+            if (userEmail == null || userEmail.isBlank()) {
+                userEmail = savedComplaint.getEmail();
+            }
+            if (userEmail != null && !userEmail.isBlank()) {
+                mailService.sendComplaintConfirmation(userEmail, savedComplaint);
+                log.info("Complaint confirmation email dispatched to {} for complaint id={}", userEmail, savedComplaint.getId());
+            } else {
+                log.warn("No user email available to send complaint confirmation for id={}", savedComplaint.getId());
+            }
+        } catch (Exception ex) {
+            log.error("Failed to send complaint confirmation email for id={}: {}", savedComplaint.getId(), ex.getMessage());
+        }
+
         return toResponse(savedComplaint);
     }
 
